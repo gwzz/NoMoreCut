@@ -43,7 +43,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="label">Analytics</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal text-ink">统计与周期分析</h1>
+            <h1 className="gradient-text mt-2 text-2xl font-semibold tracking-normal">统计与周期分析</h1>
             <p className="mt-2 text-sm text-muted">默认从 2026 年开始观察资金节奏、资产配置和收益趋势。</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -54,8 +54,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                 className={clsx(
                   "inline-flex h-10 items-center rounded-md border px-3 text-sm font-medium transition",
                   selectedYear === option
-                    ? "border-ink bg-ink text-white"
-                    : "border-line bg-white text-muted hover:border-ink hover:text-ink"
+                    ? "border-cyan-300/60 bg-white text-slate-950 shadow-[0_12px_40px_rgba(103,232,249,0.12)]"
+                    : "border-white/10 bg-white/[0.045] text-slate-400 hover:border-cyan-300/40 hover:text-white"
                 )}
               >
                 {option}

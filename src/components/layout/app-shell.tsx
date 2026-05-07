@@ -1,11 +1,12 @@
 "use client";
 
 import clsx from "clsx";
-import { BarChart3, ListPlus, PieChart, Settings2, UserRound, WalletCards } from "lucide-react";
+import { BarChart3, ListPlus, Settings2, UserRound, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 const navItems = [
   { href: "/", label: "看板", icon: WalletCards },
@@ -24,16 +25,17 @@ export function AppShell({ children, userEmail }: { children: ReactNode; userEma
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/88 backdrop-blur-xl">
+    <div className="app-shell pb-20 text-ink md:pb-0">
+      <div className="ambient-mesh" aria-hidden />
+      <div className="app-grid" aria-hidden />
+
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/72 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="NoMoreCut 首页">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-ink text-white">
-              <PieChart className="h-5 w-5" aria-hidden />
-            </span>
+            <LogoMark className="h-9 w-9 shadow-[0_0_42px_rgba(103,232,249,0.14)]" />
             <span>
-              <span className="block text-sm font-semibold leading-tight">NoMoreCut</span>
-              <span className="block text-xs text-muted">Investment Ledger</span>
+              <span className="block text-sm font-semibold leading-tight text-white">NoMoreCut</span>
+              <span className="block text-xs text-slate-500">Investment Ledger</span>
             </span>
           </Link>
 
@@ -48,7 +50,9 @@ export function AppShell({ children, userEmail }: { children: ReactNode; userEma
                   href={item.href}
                   className={clsx(
                     "inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
-                    active ? "bg-ink text-white" : "text-muted hover:bg-white hover:text-ink"
+                    active
+                      ? "bg-white text-slate-950 shadow-[0_12px_40px_rgba(103,232,249,0.12)]"
+                      : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
                   )}
                 >
                   <Icon className="h-4 w-4" aria-hidden />
@@ -57,8 +61,8 @@ export function AppShell({ children, userEmail }: { children: ReactNode; userEma
               );
             })}
             {userEmail ? (
-              <div className="ml-2 flex items-center gap-2 border-l border-line pl-3">
-                <Link href="/account" className="max-w-36 truncate text-xs text-muted" title={userEmail}>
+              <div className="ml-2 flex items-center gap-2 border-l border-white/10 pl-3">
+                <Link href="/account" className="max-w-36 truncate text-xs text-slate-400 transition hover:text-white" title={userEmail}>
                   {userEmail}
                 </Link>
                 <SignOutButton compact />
@@ -68,9 +72,9 @@ export function AppShell({ children, userEmail }: { children: ReactNode; userEma
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/94 backdrop-blur-xl md:hidden" aria-label="移动端导航">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-slate-950/88 backdrop-blur-xl md:hidden" aria-label="移动端导航">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -82,7 +86,7 @@ export function AppShell({ children, userEmail }: { children: ReactNode; userEma
                 href={item.href}
                 className={clsx(
                   "flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition",
-                  active ? "text-ink" : "text-muted"
+                  active ? "text-cyan-100" : "text-slate-500"
                 )}
               >
                 <Icon className="h-5 w-5" aria-hidden />

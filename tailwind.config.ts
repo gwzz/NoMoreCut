@@ -9,16 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        surface: "#f6f5f2",
-        ink: "#171717",
-        muted: "#737373",
-        line: "#dedbd4",
-        gain: "#0f8f5f",
-        loss: "#c94747",
-        brass: "#a68145"
+        surface: "#071523",
+        ink: "#f8fafc",
+        muted: "#94a3b8",
+        line: "rgba(255,255,255,0.1)",
+        gain: "#34d399",
+        loss: "#fb7185",
+        brass: "#fbbf24"
       },
       boxShadow: {
-        soft: "0 24px 80px rgba(23, 23, 23, 0.08)"
+        soft: "0 28px 100px rgba(0, 0, 0, 0.34)"
       }
     }
   },

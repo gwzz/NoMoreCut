@@ -26,6 +26,7 @@ pnpm-debug.log*
 npm-*.tgz
 package/
 dev-server.log
+dev-server.err.log
 
 # local env files
 .env

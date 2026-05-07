@@ -151,7 +151,7 @@ export function TransactionsWorkspace({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="label">Data Entry</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal text-ink">{selectedId ? "编辑记录" : "记一笔"}</h1>
+            <h1 className="gradient-text mt-2 text-2xl font-semibold tracking-normal">{selectedId ? "编辑记录" : "记一笔"}</h1>
           </div>
           {selectedId ? (
             <button type="button" className="icon-button" onClick={resetForm} title="取消编辑">
@@ -173,7 +173,9 @@ export function TransactionsWorkspace({
                   onClick={() => updateField("type", type)}
                   className={clsx(
                     "h-10 rounded-md border text-sm font-medium transition",
-                    form.type === type ? "border-ink bg-ink text-white" : "border-line bg-white text-muted hover:border-ink hover:text-ink"
+                    form.type === type
+                      ? "border-cyan-300/60 bg-white text-slate-950 shadow-[0_12px_40px_rgba(103,232,249,0.12)]"
+                      : "border-white/10 bg-white/[0.045] text-slate-400 hover:border-cyan-300/40 hover:text-white"
                   )}
                 >
                   {transactionTypeLabels[type]}
@@ -300,7 +302,7 @@ export function TransactionsWorkspace({
           </div>
 
           {computedAmount && !form.amount ? (
-            <div className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-xs text-muted">
+          <div className="flex items-center gap-2 rounded-md border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-xs text-cyan-100">
               <Calculator className="h-4 w-4" aria-hidden />
               根据份额和单价估算金额：{formatCurrency(computedAmount)}
             </div>
@@ -330,9 +332,9 @@ export function TransactionsWorkspace({
           <p className="text-sm text-muted">共 {transactions.length} 笔</p>
         </div>
 
-        <div className="mt-5 hidden overflow-hidden rounded-md border border-line md:block">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead className="bg-surface text-xs uppercase text-muted">
+          <div className="mt-5 hidden overflow-hidden rounded-md border border-white/10 md:block">
+            <table className="w-full border-collapse text-left text-sm">
+            <thead className="bg-white/[0.045] text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">日期</th>
                 <th className="px-4 py-3 font-medium">资产</th>
@@ -341,7 +343,7 @@ export function TransactionsWorkspace({
                 <th className="px-4 py-3 text-right font-medium">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line bg-white">
+            <tbody className="divide-y divide-white/10 bg-white/[0.025]">
               {transactions.map((transaction) => (
                 <tr key={transaction.id}>
                   <td className="px-4 py-3 text-muted">{formatDate(transaction.tradeDate)}</td>
@@ -369,7 +371,7 @@ export function TransactionsWorkspace({
 
         <div className="mt-5 space-y-3 md:hidden">
           {transactions.map((transaction) => (
-            <article key={transaction.id} className="rounded-md border border-line bg-white p-4">
+            <article key={transaction.id} className="rounded-md border border-white/10 bg-white/[0.045] p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-medium text-ink">{transaction.assetName}</p>

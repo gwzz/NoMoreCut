@@ -1,4 +1,4 @@
-import { AuthForm } from "@/components/auth/auth-form";
+import { LoginLanding } from "@/components/auth/login-landing";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -21,12 +21,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const nextPath = normalizeNextPath(params?.next);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <AuthForm
-        initialError={params?.error}
-        initialMessage={params?.message}
-        nextPath={nextPath}
-      />
-    </main>
+    <LoginLanding
+      initialError={params?.error}
+      initialMessage={params?.message}
+      nextPath={nextPath}
+    />
   );
 }

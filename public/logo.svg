@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">NoMoreCut bot logo</title>
+  <desc id="desc">A dark robot bot logo with glowing cyan and green eyes and a rising chart signal.</desc>
+  <defs>
+    <linearGradient id="face" x1="16" y1="18" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/>
+      <stop offset=".56" stop-color="#A7F3D0"/>
+      <stop offset="1" stop-color="#C4B5FD"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="20" y1="26" x2="44" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1B2A"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#020617"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#67E8F9" stroke-opacity=".26" stroke-width="2"/>
+  <path d="M32 15V10" fill="none" stroke="#67E8F9" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="32" cy="8" r="3" fill="#A7F3D0"/>
+  <path d="M15 33H11" fill="none" stroke="#67E8F9" stroke-width="4" stroke-linecap="round"/>
+  <path d="M53 33H49" fill="none" stroke="#C4B5FD" stroke-width="4" stroke-linecap="round"/>
+  <rect x="15" y="16" width="34" height="34" rx="12" fill="url(#face)"/>
+  <rect x="18.5" y="19.5" width="27" height="27" rx="9" fill="url(#screen)" stroke="#E0FAFF" stroke-opacity=".22"/>
+  <circle cx="27" cy="31" r="3.5" fill="#67E8F9"/>
+  <circle cx="38" cy="31" r="3.5" fill="#A7F3D0"/>
+  <path d="M24 39H29L32 36L35.5 41L40 35" fill="none" stroke="#C4B5FD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M22 52H42" fill="none" stroke="#67E8F9" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+</svg>

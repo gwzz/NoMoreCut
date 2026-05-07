@@ -34,7 +34,7 @@ export default async function DashboardPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="label">投资组合看板</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink sm:text-4xl">个人投资账本</h1>
+              <h1 className="gradient-text mt-2 text-3xl font-semibold tracking-normal sm:text-4xl">个人投资账本</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
                 以交易记录为基础，用手动估值快照校准当前市值，持续追踪资产结构、收益和长期目标。
               </p>
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
 
         <aside className="panel rounded-lg p-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-ink text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-cyan-300/10 text-cyan-100 ring-1 ring-cyan-300/20">
               <CalendarClock className="h-5 w-5" aria-hidden />
             </span>
             <div>

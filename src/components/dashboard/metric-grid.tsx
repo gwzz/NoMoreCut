@@ -39,17 +39,18 @@ export function MetricGrid({ summary }: { summary: DashboardSummary }) {
         const Icon = metric.icon;
         const positive = metric.key === "profit" ? summary.profit >= 0 : summary.roi >= 0;
         const DirectionIcon = positive ? ArrowUpRight : ArrowDownRight;
+        const toneClass = metric.tone?.(summary);
 
         return (
-          <section key={metric.key} className="panel rounded-lg p-5">
+          <section key={metric.key} className="panel rounded-lg p-5 transition hover:-translate-y-1">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-muted">{metric.label}</p>
-                <p className={clsx("mt-3 text-2xl font-semibold tracking-normal", metric.tone?.(summary) ?? "text-ink")}>
+                <p className={clsx("mt-3 text-2xl font-semibold tracking-normal", toneClass ?? "gradient-text")}>
                   {metric.format(summary)}
                 </p>
               </div>
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-surface text-ink">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-cyan-300/10 text-cyan-100 ring-1 ring-cyan-300/20">
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
             </div>

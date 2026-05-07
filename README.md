@@ -66,6 +66,7 @@ seed 只会清理并重建该用户的业务数据，不会删除其他用户的
 ## 登录/注册排查
 
 - 确认 Vercel 环境变量里配置了 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`，并且重新部署过。
+- 注册账户先出现在 Supabase 的 Authentication -> Users；业务表里的 `UserProfile` 只会在用户确认邮箱并成功登录后创建。
 - 在 Supabase Authentication 的 URL Configuration 中，生产域名要加入 `https://你的域名/auth/callback`。
 - 如果开启了邮箱确认，注册后必须先点击确认邮件才能登录；测试阶段也可以临时关闭邮箱确认。
 - 如果页面提示用户资料初始化失败，通常是还没有在 Supabase SQL Editor 执行 `supabase/schema.sql`。

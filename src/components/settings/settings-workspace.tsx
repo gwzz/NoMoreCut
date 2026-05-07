@@ -56,7 +56,7 @@ export function SettingsWorkspace({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categoryForm, setCategoryForm] = useState({ name: "", color: "#171717", description: "" });
+  const [categoryForm, setCategoryForm] = useState({ name: "", color: "#67e8f9", description: "" });
   const [assetForm, setAssetForm] = useState<AssetForm>(() => emptyAssetForm(categories[0]?.id));
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [goalForm, setGoalForm] = useState({
@@ -105,7 +105,7 @@ export function SettingsWorkspace({
         method: "POST",
         body: JSON.stringify(categoryForm)
       },
-      () => setCategoryForm({ name: "", color: "#171717", description: "" })
+      () => setCategoryForm({ name: "", color: "#67e8f9", description: "" })
     );
   }
 
@@ -187,7 +187,7 @@ export function SettingsWorkspace({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="label">Settings</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal text-ink">账本设置</h1>
+            <h1 className="gradient-text mt-2 text-2xl font-semibold tracking-normal">账本设置</h1>
             <p className="mt-2 text-sm text-muted">维护分类、资产估值、周期目标和组合快照。</p>
           </div>
           {error ? <p className="rounded-md bg-loss/10 px-3 py-2 text-sm text-loss">{error}</p> : null}
@@ -343,9 +343,9 @@ export function SettingsWorkspace({
             </form>
             <div className="mt-5 space-y-2">
               {categories.map((category) => (
-                <div key={category.id} className="flex items-center justify-between gap-3 rounded-md border border-line bg-white px-3 py-2">
+                <div key={category.id} className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.045] px-3 py-2">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: category.color ?? "#171717" }} aria-hidden />
+                    <span className="h-3 w-3 rounded-sm shadow-[0_0_18px_currentColor]" style={{ backgroundColor: category.color ?? "#67e8f9", color: category.color ?? "#67e8f9" }} aria-hidden />
                     <span className="truncate text-sm font-medium text-ink">{category.name}</span>
                   </div>
                   <button className="icon-button h-8 w-8" type="button" title="删除分类" onClick={() => deleteCategory(category.id)}>
@@ -470,7 +470,7 @@ export function SettingsWorkspace({
 
           <div className="space-y-3">
             {goals.map((goal) => (
-              <article key={goal.id} className="rounded-md border border-line bg-white p-4">
+              <article key={goal.id} className="rounded-md border border-white/10 bg-white/[0.045] p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-semibold text-ink">{goal.name}</p>

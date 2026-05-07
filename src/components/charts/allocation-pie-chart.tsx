@@ -34,6 +34,12 @@ export function AllocationPieChart({ data }: { data: AllocationDatum[] }) {
               ))}
             </Pie>
             <Tooltip
+              contentStyle={{
+                background: "rgba(7, 21, 35, 0.96)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 8,
+                color: "#f8fafc"
+              }}
               formatter={(value: number, _name, item) => [
                 `${formatCurrency(value)} / ${formatPercent(item.payload.ratio)}`,
                 item.payload.name

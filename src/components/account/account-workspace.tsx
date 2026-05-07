@@ -49,10 +49,10 @@ export function AccountWorkspace({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="label">Profile</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal text-ink">账户管理</h1>
+            <h1 className="gradient-text mt-2 text-2xl font-semibold tracking-normal">账户管理</h1>
             <p className="mt-2 text-sm text-muted">你的账本数据会按 Supabase 用户 ID 隔离保存。</p>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-gain text-white">
+          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-300/10 text-emerald-100 ring-1 ring-emerald-300/20">
             <ShieldCheck className="h-5 w-5" aria-hidden />
           </span>
         </div>
@@ -73,7 +73,7 @@ export function AccountWorkspace({
 
           <div>
             <p className="label">登录邮箱</p>
-            <p className="mt-2 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink">{email ?? "未提供邮箱"}</p>
+            <p className="mt-2 rounded-md border border-white/10 bg-white/[0.055] px-3 py-2 text-sm text-ink">{email ?? "未提供邮箱"}</p>
           </div>
 
           {error ? <p className="rounded-md bg-loss/10 px-3 py-2 text-sm text-loss">{error}</p> : null}

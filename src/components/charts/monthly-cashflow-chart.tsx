@@ -17,12 +17,12 @@ export function MonthlyCashflowChart({ data }: { data: MonthlyCashflowDatum[] })
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 12, bottom: 0, left: 0 }}>
-          <CartesianGrid stroke="#dedbd4" vertical={false} />
-          <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: "#737373", fontSize: 12 }} />
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+          <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fill: "#737373", fontSize: 12 }}
+            tick={{ fill: "#94a3b8", fontSize: 12 }}
             tickFormatter={(value) => formatCurrency(Number(value), { compact: true })}
             width={56}
           />
@@ -35,11 +35,17 @@ export function MonthlyCashflowChart({ data }: { data: MonthlyCashflowDatum[] })
               };
               return [formatCurrency(value), labels[String(name)] ?? name];
             }}
-            labelStyle={{ color: "#171717" }}
+            contentStyle={{
+              background: "rgba(7, 21, 35, 0.96)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 8,
+              color: "#f8fafc"
+            }}
+            labelStyle={{ color: "#f8fafc" }}
           />
-          <Bar dataKey="buy" fill="#171717" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="sell" fill="#c94747" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="dividend" fill="#0f8f5f" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="buy" fill="#67e8f9" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="sell" fill="#fb7185" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="dividend" fill="#34d399" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

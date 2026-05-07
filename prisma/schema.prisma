@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model UserProfile {
+  id          String   @id
+  email       String?
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AssetCategory {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  color       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assets Asset[]
+
+  @@unique([id, userId])
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Asset {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  symbol         String?
+  categoryId     String
+  strategyRole   String   @default("CORE")
+  estimatedValue Decimal?
+  targetWeight   Decimal?
+  note           String?
+  isArchived     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  category    AssetCategory @relation(fields: [categoryId, userId], references: [id, userId], onDelete: Restrict)
+  investments Investment[]
+
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, categoryId])
+  @@index([userId, strategyRole])
+}
+
+model Investment {
+  id        String   @id @default(cuid())
+  userId    String
+  assetId   String
+  type      String
+  tradeDate DateTime
+  amount    Decimal
+  quantity  Decimal?
+  price     Decimal?
+  fee       Decimal?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  asset Asset @relation(fields: [assetId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, assetId])
+  @@index([userId, tradeDate])
+  @@index([userId, type])
+}
+
+model PortfolioSnapshot {
+  id           String   @id @default(cuid())
+  userId       String
+  snapshotDate DateTime
+  totalValue   Decimal
+  principal    Decimal
+  profit       Decimal
+  roi          Decimal
+  note         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([id, userId])
+  @@unique([userId, snapshotDate])
+  @@index([userId, snapshotDate])
+}
+
+model InvestmentGoal {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  startDate    DateTime
+  targetDate   DateTime
+  targetAmount Decimal
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([id, userId])
+  @@index([userId, targetDate])
+}

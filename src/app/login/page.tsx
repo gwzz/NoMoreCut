@@ -2,6 +2,8 @@ import { AuthForm } from "@/components/auth/auth-form";
 
 type LoginPageProps = {
   searchParams?: Promise<{
+    error?: string;
+    message?: string;
     next?: string;
   }>;
 };
@@ -20,7 +22,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <AuthForm nextPath={nextPath} />
+      <AuthForm
+        initialError={params?.error}
+        initialMessage={params?.message}
+        nextPath={nextPath}
+      />
     </main>
   );
 }

@@ -2,19 +2,51 @@
 
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, MailCheck, UserPlus } from "lucide-react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 
 type AuthMode = "sign-in" | "sign-up";
 
-export function AuthForm({ nextPath }: { nextPath: string }) {
+type AuthFormProps = {
+  initialError?: string;
+  initialMessage?: string;
+  nextPath: string;
+};
+
+function getAuthErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("email not confirmed")) {
+    return "邮箱还没有确认。请先打开确认邮件，或切换到注册后重新发送确认邮件。";
+  }
+
+  if (normalized.includes("invalid login credentials")) {
+    return "邮箱或密码不正确；如果刚注册，请先确认邮箱后再登录。";
+  }
+
+  if (normalized.includes("signup") && normalized.includes("disabled")) {
+    return "当前 Supabase 项目没有开启邮箱注册，请在 Authentication 设置里启用 Email signups。";
+  }
+
+  if (normalized.includes("already registered")) {
+    return "这个邮箱已经注册过，请直接登录；如果还没确认邮箱，可以重新发送确认邮件。";
+  }
+
+  if (normalized.includes("rate limit")) {
+    return "请求太频繁了，请稍等一会儿再试。";
+  }
+
+  return message;
+}
+
+export function AuthForm({ initialError, initialMessage, nextPath }: AuthFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(initialMessage ?? null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -23,33 +55,66 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
     setMessage(null);
     setIsSubmitting(true);
 
-    const supabase = createClient();
-    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-    const result =
-      mode === "sign-in"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: callbackUrl
-            }
-          });
+    try {
+      const supabase = createClient();
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+      const result =
+        mode === "sign-in"
+          ? await supabase.auth.signInWithPassword({ email, password })
+          : await supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                emailRedirectTo: callbackUrl
+              }
+            });
 
-    setIsSubmitting(false);
+      if (result.error) {
+        setError(getAuthErrorMessage(result.error.message));
+        return;
+      }
 
-    if (result.error) {
-      setError(result.error.message);
-      return;
+      if (mode === "sign-up" && !result.data.session) {
+        setMessage("账号已创建。请打开确认邮件完成验证，然后回到这里登录。");
+        return;
+      }
+
+      router.push(nextPath);
+      router.refresh();
+    } catch (authError) {
+      setError(authError instanceof Error ? getAuthErrorMessage(authError.message) : "登录服务暂时不可用。");
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    if (mode === "sign-up" && !result.data.session) {
-      setMessage("账号已创建，请检查邮箱并完成确认。");
-      return;
+  async function resendConfirmation() {
+    setError(null);
+    setMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const supabase = createClient();
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: {
+          emailRedirectTo: callbackUrl
+        }
+      });
+
+      if (resendError) {
+        setError(getAuthErrorMessage(resendError.message));
+        return;
+      }
+
+      setMessage("确认邮件已重新发送，请检查邮箱。");
+    } catch (authError) {
+      setError(authError instanceof Error ? getAuthErrorMessage(authError.message) : "确认邮件发送失败。");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push(nextPath);
-    router.refresh();
   }
 
   return (
@@ -126,6 +191,18 @@ export function AuthForm({ nextPath }: { nextPath: string }) {
           {mode === "sign-in" ? <LogIn className="h-4 w-4" aria-hidden /> : <UserPlus className="h-4 w-4" aria-hidden />}
           {isSubmitting ? "处理中" : mode === "sign-in" ? "登录" : "注册"}
         </button>
+
+        {mode === "sign-up" ? (
+          <button
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-line bg-white text-sm font-medium text-muted transition hover:border-ink hover:text-ink"
+            type="button"
+            disabled={isSubmitting || !email}
+            onClick={resendConfirmation}
+          >
+            <MailCheck className="h-4 w-4" aria-hidden />
+            重新发送确认邮件
+          </button>
+        ) : null}
       </form>
     </section>
   );

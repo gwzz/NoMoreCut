@@ -1,6 +1,13 @@
-import { prisma } from "@/lib/prisma";
 import { roundMoney, safeRatio, toNumber } from "@/lib/number";
-import { listInvestments } from "@/services/investment-service";
+import {
+  tables,
+  throwSupabaseError,
+  toIsoTimestamp,
+  type PortfolioSnapshotRecord
+} from "@/lib/supabase/database";
+import { createClient } from "@/lib/supabase/server";
+import { listRawAssets } from "@/services/asset-service";
+import { listInvestments, listRawInvestments } from "@/services/investment-service";
 import {
   calculateAssetValueMap,
   calculateCashTotals,
@@ -9,23 +16,24 @@ import {
 import type { DashboardSummary } from "@/types/domain";
 
 export async function getDashboardSummary(userId: string): Promise<DashboardSummary> {
-  const [investments, assets, latestSnapshot, recentTransactions] = await Promise.all([
-    prisma.investment.findMany({
-      where: { userId },
-      orderBy: { tradeDate: "asc" }
-    }),
-    prisma.asset.findMany({
-      include: { category: true },
-      where: { userId, isArchived: false },
-      orderBy: { createdAt: "asc" }
-    }),
-    prisma.portfolioSnapshot.findFirst({
-      where: { userId },
-      orderBy: [{ snapshotDate: "desc" }, { createdAt: "desc" }]
-    }),
+  const supabase = await createClient();
+  const [investments, assets, latestSnapshotResponse, recentTransactions] = await Promise.all([
+    listRawInvestments(userId),
+    listRawAssets(userId).then((items) => items.filter((asset) => !asset.isArchived)),
+    supabase
+      .from(tables.portfolioSnapshots)
+      .select("*")
+      .eq("userId", userId)
+      .order("snapshotDate", { ascending: false })
+      .order("createdAt", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
     listInvestments(userId, { limit: 5 })
   ]);
 
+  throwSupabaseError(latestSnapshotResponse.error);
+
+  const latestSnapshot = latestSnapshotResponse.data as PortfolioSnapshotRecord | null;
   const cashTotals = calculateCashTotals(investments);
   const assetValue = calculateAssetValueMap(assets, investments);
   const estimatedAssetTotal = Array.from(assetValue.values.values()).reduce((sum, value) => sum + value, 0);
@@ -41,7 +49,7 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
     dividendIncome: cashTotals.dividend,
     profit,
     roi,
-    latestSnapshotDate: latestSnapshot?.snapshotDate.toISOString() ?? null,
+    latestSnapshotDate: latestSnapshot ? toIsoTimestamp(latestSnapshot.snapshotDate) : null,
     allocationBasis: latestSnapshot ? "SNAPSHOT" : assetValue.basis,
     strategy: summarizeStrategy(assets, assetValue.values),
     recentTransactions

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 
 export class ApiError extends Error {
@@ -37,20 +36,6 @@ export function handleApiError(error: unknown) {
       },
       { status: 400 }
     );
-  }
-
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === "P2002") {
-      return NextResponse.json({ message: "记录已存在，请检查唯一字段" }, { status: 409 });
-    }
-
-    if (error.code === "P2003") {
-      return NextResponse.json({ message: "关联数据不存在或无法删除" }, { status: 409 });
-    }
-
-    if (error.code === "P2025") {
-      return NextResponse.json({ message: "记录不存在或无权访问" }, { status: 404 });
-    }
   }
 
   if (error instanceof Error) {

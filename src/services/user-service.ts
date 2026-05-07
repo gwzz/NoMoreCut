@@ -1,4 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import {
+  nowIso,
+  requireRecord,
+  tables,
+  throwSupabaseError,
+  type UserProfileRecord
+} from "@/lib/supabase/database";
+import { createClient } from "@/lib/supabase/server";
 
 export type AuthenticatedUser = {
   id: string;
@@ -6,46 +13,80 @@ export type AuthenticatedUser = {
 };
 
 export async function ensureUserProfile(user: AuthenticatedUser) {
-  const existing = await prisma.userProfile.findUnique({
-    where: { id: user.id }
-  });
+  const supabase = await createClient();
+  const { data: existing, error: existingError } = await supabase
+    .from(tables.userProfiles)
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  throwSupabaseError(existingError);
 
   if (!existing) {
-    return prisma.userProfile.create({
-      data: {
+    const now = nowIso();
+    const { data, error } = await supabase
+      .from(tables.userProfiles)
+      .insert({
         id: user.id,
-        email: user.email
-      }
-    });
+        email: user.email,
+        displayName: null,
+        createdAt: now,
+        updatedAt: now
+      })
+      .select("*")
+      .single();
+
+    return requireRecord(data as UserProfileRecord | null, error);
   }
 
-  if (existing.email !== user.email) {
-    return prisma.userProfile.update({
-      where: { id: user.id },
-      data: { email: user.email }
-    });
+  const profile = existing as UserProfileRecord;
+
+  if (profile.email !== user.email) {
+    const { data, error } = await supabase
+      .from(tables.userProfiles)
+      .update({
+        email: user.email,
+        updatedAt: nowIso()
+      })
+      .eq("id", user.id)
+      .select("*")
+      .maybeSingle();
+
+    return requireRecord(data as UserProfileRecord | null, error);
   }
 
-  return existing;
+  return profile;
 }
 
 export async function getUserProfile(userId: string) {
-  return prisma.userProfile.findUnique({
-    where: { id: userId }
-  });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tables.userProfiles)
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+
+  throwSupabaseError(error);
+
+  return data as UserProfileRecord | null;
 }
 
 export async function updateUserProfile(user: AuthenticatedUser, input: { displayName: string | null }) {
-  return prisma.userProfile.upsert({
-    where: { id: user.id },
-    create: {
-      id: user.id,
-      email: user.email,
-      displayName: input.displayName
-    },
-    update: {
-      email: user.email,
-      displayName: input.displayName
-    }
-  });
+  const supabase = await createClient();
+  const now = nowIso();
+  const { data, error } = await supabase
+    .from(tables.userProfiles)
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        displayName: input.displayName,
+        updatedAt: now
+      },
+      { onConflict: "id" }
+    )
+    .select("*")
+    .single();
+
+  return requireRecord(data as UserProfileRecord | null, error);
 }

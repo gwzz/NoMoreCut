@@ -1,15 +1,21 @@
-import { Prisma } from "@prisma/client";
 import { ApiError } from "@/lib/api";
-import { prisma } from "@/lib/prisma";
+import {
+  createId,
+  nowIso,
+  requireRecord,
+  tables,
+  throwSupabaseError,
+  type AssetCategoryRecord
+} from "@/lib/supabase/database";
+import { createClient } from "@/lib/supabase/server";
 import type { CategoryInput } from "@/lib/validations/category";
 import type { CategoryOption } from "@/types/domain";
 
-function mapCategory(category: {
-  id: string;
-  name: string;
-  color: string | null;
-  description: string | null;
-}): CategoryOption {
+function nullable<T>(value: T | undefined) {
+  return value ?? null;
+}
+
+function mapCategory(category: AssetCategoryRecord): CategoryOption {
   return {
     id: category.id,
     name: category.name,
@@ -19,42 +25,69 @@ function mapCategory(category: {
 }
 
 export async function listCategories(userId: string) {
-  const categories = await prisma.assetCategory.findMany({
-    where: { userId },
-    orderBy: { createdAt: "asc" }
-  });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tables.assetCategories)
+    .select("*")
+    .eq("userId", userId)
+    .order("createdAt", { ascending: true });
 
-  return categories.map(mapCategory);
+  throwSupabaseError(error);
+
+  return ((data ?? []) as AssetCategoryRecord[]).map(mapCategory);
 }
 
 export async function createCategory(userId: string, input: CategoryInput) {
-  const category = await prisma.assetCategory.create({
-    data: {
-      ...input,
-      userId
-    }
-  });
+  const supabase = await createClient();
+  const now = nowIso();
+  const { data, error } = await supabase
+    .from(tables.assetCategories)
+    .insert({
+      id: createId(),
+      userId,
+      name: input.name,
+      color: nullable(input.color),
+      description: nullable(input.description),
+      createdAt: now,
+      updatedAt: now
+    })
+    .select("*")
+    .single();
 
-  return mapCategory(category);
+  return mapCategory(requireRecord(data as AssetCategoryRecord | null, error));
 }
 
 export async function updateCategory(userId: string, id: string, input: CategoryInput) {
-  const category = await prisma.assetCategory.update({
-    where: { id_userId: { id, userId } },
-    data: input
-  });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tables.assetCategories)
+    .update({
+      name: input.name,
+      color: nullable(input.color),
+      description: nullable(input.description),
+      updatedAt: nowIso()
+    })
+    .eq("id", id)
+    .eq("userId", userId)
+    .select("*")
+    .maybeSingle();
 
-  return mapCategory(category);
+  return mapCategory(requireRecord(data as AssetCategoryRecord | null, error));
 }
 
 export async function deleteCategory(userId: string, id: string) {
-  try {
-    await prisma.assetCategory.delete({ where: { id_userId: { id, userId } } });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-      throw new ApiError("该分类下仍有关联资产，无法删除", 409);
-    }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tables.assetCategories)
+    .delete()
+    .eq("id", id)
+    .eq("userId", userId)
+    .select("id")
+    .maybeSingle();
 
-    throw error;
+  if (error?.code === "23503") {
+    throw new ApiError("该分类下仍有关联资产，无法删除", 409);
   }
+
+  requireRecord(data as Pick<AssetCategoryRecord, "id"> | null, error);
 }

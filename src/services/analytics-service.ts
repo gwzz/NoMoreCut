@@ -1,24 +1,27 @@
-import { prisma } from "@/lib/prisma";
 import { baseAnalyticsYear } from "@/lib/constants";
 import { roundMoney, safeRatio, toNumber } from "@/lib/number";
+import {
+  tables,
+  throwSupabaseError,
+  toIsoTimestamp,
+  type InvestmentRecord,
+  type PortfolioSnapshotRecord
+} from "@/lib/supabase/database";
+import { createClient } from "@/lib/supabase/server";
 import { getDashboardSummary } from "@/services/portfolio-service";
 import {
   calculateAssetValueMap,
   summarizeAllocation
 } from "@/services/portfolio-calculations";
+import { listRawAssets } from "@/services/asset-service";
+import { listGoals } from "@/services/goal-service";
+import { listRawInvestments } from "@/services/investment-service";
 import type { GoalProgress, MonthlyCashflowDatum, ProfitTrendDatum } from "@/types/domain";
 
 export async function getAllocationData(userId: string) {
   const [assets, investments] = await Promise.all([
-    prisma.asset.findMany({
-      include: { category: true },
-      where: { userId, isArchived: false },
-      orderBy: { createdAt: "asc" }
-    }),
-    prisma.investment.findMany({
-      where: { userId },
-      orderBy: { tradeDate: "asc" }
-    })
+    listRawAssets(userId).then((items) => items.filter((asset) => !asset.isArchived)),
+    listRawInvestments(userId)
   ]);
 
   const assetValue = calculateAssetValueMap(assets, investments);
@@ -26,19 +29,20 @@ export async function getAllocationData(userId: string) {
 }
 
 export async function getMonthlyCashflow(userId: string, year = baseAnalyticsYear): Promise<MonthlyCashflowDatum[]> {
+  const supabase = await createClient();
   const start = new Date(`${year}-01-01T00:00:00.000Z`);
   const end = new Date(`${year + 1}-01-01T00:00:00.000Z`);
-  const investments = await prisma.investment.findMany({
-    where: {
-      userId,
-      tradeDate: {
-        gte: start,
-        lt: end
-      }
-    },
-    orderBy: { tradeDate: "asc" }
-  });
+  const { data, error } = await supabase
+    .from(tables.investments)
+    .select("*")
+    .eq("userId", userId)
+    .gte("tradeDate", start.toISOString())
+    .lt("tradeDate", end.toISOString())
+    .order("tradeDate", { ascending: true });
 
+  throwSupabaseError(error);
+
+  const investments = (data ?? []) as InvestmentRecord[];
   const months: MonthlyCashflowDatum[] = Array.from({ length: 12 }, (_, index) => ({
     month: `${index + 1}月`,
     buy: 0,
@@ -48,7 +52,7 @@ export async function getMonthlyCashflow(userId: string, year = baseAnalyticsYea
   }));
 
   for (const investment of investments) {
-    const index = investment.tradeDate.getUTCMonth();
+    const index = new Date(toIsoTimestamp(investment.tradeDate)).getUTCMonth();
     const amount = toNumber(investment.amount);
     const fee = toNumber(investment.fee);
     const month = months[index];
@@ -76,13 +80,17 @@ export async function getMonthlyCashflow(userId: string, year = baseAnalyticsYea
 }
 
 export async function getProfitTrend(userId: string): Promise<ProfitTrendDatum[]> {
-  const snapshots = await prisma.portfolioSnapshot.findMany({
-    where: { userId },
-    orderBy: { snapshotDate: "asc" }
-  });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tables.portfolioSnapshots)
+    .select("*")
+    .eq("userId", userId)
+    .order("snapshotDate", { ascending: true });
 
-  return snapshots.map((snapshot) => ({
-    date: snapshot.snapshotDate.toISOString(),
+  throwSupabaseError(error);
+
+  return ((data ?? []) as PortfolioSnapshotRecord[]).map((snapshot) => ({
+    date: toIsoTimestamp(snapshot.snapshotDate),
     totalValue: toNumber(snapshot.totalValue),
     principal: toNumber(snapshot.principal),
     profit: toNumber(snapshot.profit),
@@ -93,25 +101,22 @@ export async function getProfitTrend(userId: string): Promise<ProfitTrendDatum[]
 export async function getGoalProgress(userId: string, summary?: { totalValue: number }): Promise<GoalProgress[]> {
   const [portfolioSummary, goals] = await Promise.all([
     summary ? Promise.resolve(summary) : getDashboardSummary(userId),
-    prisma.investmentGoal.findMany({
-      where: { userId },
-      orderBy: { targetDate: "asc" }
-    })
+    listGoals(userId)
   ]);
 
   const today = Date.now();
 
   return goals.map((goal) => {
-    const start = goal.startDate.getTime();
-    const target = goal.targetDate.getTime();
+    const start = new Date(goal.startDate).getTime();
+    const target = new Date(goal.targetDate).getTime();
     const currentValue = portfolioSummary.totalValue;
-    const targetAmount = toNumber(goal.targetAmount);
+    const targetAmount = goal.targetAmount;
 
     return {
       id: goal.id,
       name: goal.name,
-      startDate: goal.startDate.toISOString(),
-      targetDate: goal.targetDate.toISOString(),
+      startDate: goal.startDate,
+      targetDate: goal.targetDate,
       targetAmount,
       currentValue,
       amountProgress: Math.min(safeRatio(currentValue, targetAmount), 1),
